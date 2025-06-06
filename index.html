@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arena Analytics Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen font-sans px-6 py-10">
+
+  <div class="max-w-6xl mx-auto">
+    <header class="mb-10 text-center">
+      <h1 class="text-4xl font-bold text-blue-400">Arena Analytics Dashboard</h1>
+      <p class="text-gray-400 mt-2">Real-time 24H metrics from Arena</p>
+    </header>
+
+    <!-- Stats Grid -->
+    <div id="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      <!-- Dynamic stat cards will be injected here -->
+    </div>
+
+    <!-- Chart Section -->
+    <div class="bg-gray-900 p-6 rounded-xl shadow-xl">
+      <h2 class="text-2xl font-semibold mb-4 text-blue-300">Top 10 Numeric Metrics</h2>
+      <canvas id="analyticsChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <script>
+    let chartInstance;
+
+    async function fetchAnalytics() {
+      try {
+        const res = await fetch('https://api.arena.trade/analytics_all_24h');
+        const data = await res.json();
+
+        // Render Stat Cards
+        const statsContainer = document.getElementById('stats');
+        statsContainer.innerHTML = '';
+
+        Object.entries(data).forEach(([key, value]) => {
+          const isNumber = typeof value === 'number';
+          const card = document.createElement('div');
+          card.className = 'bg-gray-800 p-4 rounded-xl shadow hover:scale-[1.02] transition transform duration-150';
+
+          card.innerHTML = `
+            <div class="text-sm text-gray-400 uppercase tracking-wider mb-1">${key.replace(/_/g, ' ')}</div>
+            <div class="text-2xl font-bold text-${isNumber ? 'green' : 'blue'}-400">${isNumber ? value.toLocaleString() : value}</div>
+          `;
+
+          statsContainer.appendChild(card);
+        });
+
+        // Chart: Only numeric values
+        const labels = Object.keys(data).filter(k => typeof data[k] === 'number').slice(0, 10);
+        const values = labels.map(k => data[k]);
+
+        updateChart(labels, values);
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+      }
+    }
+
+    function updateChart(labels, values) {
+      const ctx = document.getElementById('analyticsChart').getContext('2d');
+
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Value',
+            data: values,
+            backgroundColor: 'rgba(96, 165, 250, 0.6)',
+            borderColor: 'rgba(96, 165, 250, 1)',
+            borderWidth: 2,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#ccc' },
+              grid: { color: '#333' }
+            },
+            x: {
+              ticks: { color: '#ccc' },
+              grid: { color: '#333' }
+            }
+          }
+        }
+      });
+    }
+
+    // Initial fetch + refresh every 15s
+    fetchAnalytics();
+    setInterval(fetchAnalytics, 15000);
+  </script>
+</body>
+</html>
