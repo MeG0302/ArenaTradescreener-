@@ -1,306 +1,3 @@
-M E G | P33l, [6/7/2025 3:36 AM]
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arena.trade | 24h Analytics</title>
-    <!-- Chart.js for Data Visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Tailwind-like styling for quick UI -->
-    <style>
-        :root {
-            --sidebar-bg: #1e293b;
-            --sidebar-text: #f8fafc;
-            --header-bg: #ffffff;
-            --card-bg: #ffffff;
-            --primary: #3b82f6;
-            --danger: #ef4444;
-            --success: #10b981;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f1f5f9;
-            color: #334155;
-        }
-        
-        .dashboard {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: 240px;
-            background: var(--sidebar-bg);
-            color: var(--sidebar-text);
-            padding: 1.5rem 0;
-        }
-        
-        .sidebar-header {
-            padding: 0 1.5rem 1.5rem;
-            border-bottom: 1px solid #334155;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .sidebar-menu li {
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .sidebar-menu li:hover {
-            background: #334155;
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 1.5rem;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            background: var(--header-bg);
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stat-card h3 {
-            margin: 0;
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-        
-        .stat-card p {
-            margin: 0.5rem 0 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .chart-container {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        th, td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #475569;
-        }
-        
-        tr:hover {
-            background: #f8fafc;
-        }
-        
-        .positive {
-            color: var(--success);
-        }
-        
-        .negative {
-            color: var(--danger);
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Arena.trade</h2>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="active">24h Analytics</li>
-                <li>Markets</li>
-                <li>Portfolio</li>
-                <li>Settings</li>
-            </ul>
-        </div>
-
-M E G | P33l, [6/7/2025 3:36 AM]
-<!-- Main Content -->
-        <div class="main-content">
-            <div class="header">
-                <h1>24-Hour Analytics</h1>
-                <div id="last-updated">Last updated: Loading...</div>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="stats-grid" id="stats-cards">
-                <!-- Filled by JavaScript -->
-            </div>
-
-            <!-- Chart -->
-            <div class="chart-container">
-                <h2>Volume Trends (24h)</h2>
-                <canvas id="volume-chart"></canvas>
-            </div>
-
-            <!-- Data Table -->
-            <div class="chart-container">
-                <h2>Top Performers</h2>
-                <table id="data-table">
-                    <thead>
-                        <tr>
-                            <th>Pair</th>
-                            <th>Price</th>
-                            <th>24h Change</th>
-                            <th>Volume</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <!-- Filled by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Fetch data from Arena.trade API
-        async function fetchAnalytics() {
-            try {
-                const response = await fetch('https://api.arena.trade/analytics_all_24h');
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                return null;
-            }
-        }
-
-        // Update the dashboard with fetched data
-        async function updateDashboard() {
-            const analyticsData = await fetchAnalytics();
-            if (!analyticsData) {
-                document.getElementById('last-updated').textContent = "Failed to load data";
-                return;
-            }
-
-            // Update last updated time
-            const now = new Date();
-            document.getElementById('last-updated').textContent = Last updated: ${now.toLocaleTimeString()};
-
-            // Update stats cards (assuming data structure)
-            const statsContainer = document.getElementById('stats-cards');
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <h3>Total Volume</h3>
-                    <p>$${(analyticsData.totalVolume / 1e6).toFixed(2)}M</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Active Traders</h3>
-                    <p>${analyticsData.activeTraders.toLocaleString()}</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Trades</h3>
-                    <p>${analyticsData.totalTrades.toLocaleString()}</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Avg. Trade Size</h3>
-                    <p>$${analyticsData.avgTradeSize.toLocaleString()}</p>
-                </div>
-            `;
-
-            // Update chart (example with mock data)
-            const ctx = document.getElementById('volume-chart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Array(24).fill().map((_, i) => `${i}:00`),
-                    datasets: [{
-                        label: 'Volume (USD)',
-                        data: Array(24).fill().map(() => Math.random() * 1e6),
-                        borderColor: 'rgb(59, 130, 246)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // Update table (example with mock data)
-            const tableBody = document.getElementById('table-body');
-            const topPerformers = [
-
-M E G | P33l, [6/7/2025 3:36 AM]
-{ pair: "BTC/USD", price: 42356.78, change: 2.34, volume: 125000000 },
-                { pair: "ETH/USD", price: 2345.67, change: -1.23, volume: 89000000 },
-                { pair: "SOL/USD", price: 123.45, change: 5.67, volume: 45000000 },
-                { pair: "AVAX/USD", price: 56.78, change: 3.45, volume: 32000000 },
-                { pair: "DOT/USD", price: 12.34, change: -0.56, volume: 18000000 }
-            ];
-
-            tableBody.innerHTML = topPerformers.map(item => `
-                <tr>
-                    <td>${item.pair}</td>
-                    <td>$${item.price.toLocaleString()}</td>
-                    <td class="${item.change > 0 ? 'positive' : 'negative'}">
-                        ${item.change > 0 ? '+' : ''}${item.change}%
-                    </td>
-                    <td>$${(item.volume / 1e6).toFixed(2)}M</td>
-                </tr>
-            `).join('');
-        }
-
-        // Initialize dashboard
-        updateDashboard();
-        // Refresh every 60 seconds
-        setInterval(updateDashboard, 60000);
-    </script>
-</body>
-</html>
-
-M E G | P33l, [6/7/2025 3:43 AM]
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -454,9 +151,7 @@ M E G | P33l, [6/7/2025 3:43 AM]
         
         .stats-grid {
             display: grid;
-
-M E G | P33l, [6/7/2025 3:43 AM]
-grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
@@ -620,9 +315,7 @@ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         .tab.active::after {
             content: "";
             position: absolute;
-
-M E G | P33l, [6/7/2025 3:43 AM]
-bottom: -1px;
+            bottom: -1px;
             left: 0;
             right: 0;
             height: 2px;
@@ -773,9 +466,7 @@ bottom: -1px;
                 </div>
                 
                 <div class="chart-container">
-
-M E G | P33l, [6/7/2025 3:43 AM]
-<h2>Market Dominance</h2>
+                    <h2>Market Dominance</h2>
                     <canvas id="dominance-chart"></canvas>
                 </div>
             </div>
@@ -880,10 +571,7 @@ M E G | P33l, [6/7/2025 3:43 AM]
         const API_ENDPOINTS = {
             marketData: 'https://api.arena.trade/market_data',
             newListings: 'https://api.arena.trade/new_listings',
-            trending: 'https://api.
-
-M E G | P33l, [6/7/2025 3:43 AM]
-arena.trade/trending',
+            trending: 'https://api.arena.trade/trending',
             analytics: 'https://api.arena.trade/analytics_all_24h'
         };
 
@@ -933,10 +621,7 @@ arena.trade/trending',
             dominanceChart: document.getElementById('dominance-chart'),
             topPerformersBody: document.getElementById('top-performers-body'),
             newListingsBody: document.getElementById('new-listings-body'),
-            trendingBody: document.
-
-M E G | P33l, [6/7/2025 3:43 AM]
-getElementById('trending-body'),
+            trendingBody: document.getElementById('trending-body'),
             tabs: document.querySelectorAll('.tab'),
             tabContents: {
                 'top-performers': document.getElementById('top-performers-tab'),
@@ -979,24 +664,24 @@ getElementById('trending-body'),
         // Format large numbers
         function formatNumber(value) {
             if (value >= 1e9) {
-                return $${(value / 1e9).toFixed(2)}B;
+                return `$${(value / 1e9).toFixed(2)}B`;
             } else if (value >= 1e6) {
-                return $${(value / 1e6).toFixed(2)}M;
+                return `$${(value / 1e6).toFixed(2)}M`;
             } else if (value >= 1e3) {
-                return $${(value / 1e3).toFixed(2)}K;
+                return `$${(value / 1e3).toFixed(2)}K`;
             }
-            return $${value.toFixed(2)};
+            return `$${value.toFixed(2)}`;
         }
 
         // Format percentage
         function formatPercentage(value) {
-            return ${value > 0 ? '+' : ''}${value.toFixed(2)}%;
+            return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
         }
 
         // Update last updated time
         function updateTimestamp() {
             const now = new Date();
-            elements.lastUpdated.textContent = Last updated: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})};
+            elements.lastUpdated.textContent = `Last updated: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
         }
 
         // Update stats cards
@@ -1039,9 +724,7 @@ getElementById('trending-body'),
                 const base = 40000;
                 const fluctuation = Math.sin(i / 3) * 1000 + Math.random() * 500;
                 return base + fluctuation;
-
-M E G | P33l, [6/7/2025 3:43 AM]
-});
+            });
             
             const volumes = Array(24).fill().map(() => Math.random() * 1e6 + 5e5);
             
@@ -1147,10 +830,8 @@ M E G | P33l, [6/7/2025 3:43 AM]
                         },
                         tooltip: {
                             callbacks: {
-
-M E G | P33l, [6/7/2025 3:43 AM]
-label: function(context) {
-                                    return ${context.label}: ${context.raw}%;
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
                                 }
                             }
                         }
@@ -1238,9 +919,7 @@ label: function(context) {
                 initMarketChart();
                 initDominanceChart();
                 updateTopPerformersTable(marketData.topPerformers);
-
-M E G | P33l, [6/7/2025 3:43 AM]
-updateNewListingsTable(newListings);
+                updateNewListingsTable(newListings);
                 updateTrendingTable(trending);
             } catch (error) {
                 console.error("Error initializing dashboard:", error);
