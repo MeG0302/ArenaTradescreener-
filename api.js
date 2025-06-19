@@ -1,16 +1,17 @@
 // src/api.js
 import axios from 'axios';
 
-const API_BASE = 'https://api.arena.trade/rpc';
+const ANALYTICS_URL =
+  'https://api.web3modal.org/getAnalyticsConfig?projectId=7d5674dc79fe520e154172c5c58ed539&st=appkit&sv=html-core-1.7.3';
 
-export const getCoins = () =>
+export const getAnalyticsConfig = () =>
   axios
-    .get(`${API_BASE}/group_trades_plus_recent?in_limit=15&in_offset=0`)
+    .get(ANALYTICS_URL)
     .then((res) => {
-      console.log("📡 Arena API response received:", res.data);
+      console.log('📡 Arena Analytics Config:', res.data);
       return res.data;
     })
     .catch((err) => {
-      console.error("🚨 Error fetching coin data from Arena:", err);
+      console.error('🚨 Error fetching analytics config from Arena:', err);
       throw err;
     });
