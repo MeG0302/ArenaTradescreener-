@@ -12,23 +12,50 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log("🔄 Calling Arena API...");
+
     getCoins()
       .then((data) => {
+        console.log("✅ Received data from Arena API:", data);
+
+        if (!Array.isArray(data)) {
+          setError("Unexpected API response format.");
+          setLoading(false);
+          return;
+        }
+
         setCoins(data);
         setLoading(false);
       })
       .catch((err) => {
+        console.error("❌ API call failed:", err);
         setError("Failed to fetch coin data.");
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <CircularProgress style={{ margin: '20px auto', display: 'block' }} />;
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (loading) {
+    return (
+      <Typography align="center" sx={{ mt: 4 }}>
+        <CircularProgress />
+        <div>Loading Arena Data...</div>
+      </Typography>
+    );
+  }
+
+  if (error) {
+    return (
+      <Typography color="error" align="center" sx={{ mt: 4 }}>
+        {error}
+      </Typography>
+    );
+  }
 
   return (
-    <TableContainer component={Paper} style={{ marginTop: 20 }}>
-      <Typography variant="h5" align="center" gutterBottom>Meme Coin Dashboard</Typography>
+    <TableContainer component={Paper} sx={{ mt: 4 }}>
+      <Typography variant="h5" align="center" gutterBottom>
+        Meme Coin Dashboard
+      </Typography>
       <Table>
         <TableHead>
           <TableRow>
@@ -41,10 +68,12 @@ function App() {
         <TableBody>
           {coins.map((c, idx) => (
             <TableRow key={idx}>
-              <TableCell>{c.symbol}</TableCell>
-              <TableCell>{c.token_name}</TableCell>
-              <TableCell>{c.swap_count}</TableCell>
-              <TableCell>{c.token_name.includes("WETH") ? "Migrating" : "Stable"}</TableCell>
+              <TableCell>{c.symbol || "N/A"}</TableCell>
+              <TableCell>{c.token_name || "Unknown"}</TableCell>
+              <TableCell>{c.swap_count ?? "N/A"}</TableCell>
+              <TableCell>
+                {(c.token_name && c.token_name.includes("WETH")) ? "Migrating" : "Stable"}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
